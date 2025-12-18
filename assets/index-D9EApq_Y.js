@@ -392,6 +392,7 @@ https://sweetalert2.github.io/#ajax-request`),sd(o),typeof o.title=="string"&&(o
           <p>Koleksi cerita yang telah Anda simpan untuk dibaca nanti</p>
         </div>
 
+        <h2 class="visually-hidden">Kontrol Pencarian dan Pengurutan</h2>
         <div class="favorites-controls">
           <div class="search-box">
             <i class="fas fa-search"></i>
@@ -441,7 +442,7 @@ https://sweetalert2.github.io/#ajax-request`),sd(o),typeof o.title=="string"&&(o
           loading="lazy"
         />
         <div class="favorite-content">
-          <h3 class="favorite-title">${l.name}</h3>
+          <h2 class="favorite-title">${l.name}</h2>
           <p class="favorite-description">${l.description}</p>
           <div class="favorite-meta">
             <span class="favorite-date">
