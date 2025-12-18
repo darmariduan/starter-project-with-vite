@@ -16,6 +16,7 @@ export default class FavoritesPage {
           <p>Koleksi cerita yang telah Anda simpan untuk dibaca nanti</p>
         </div>
 
+        <h2 class="visually-hidden">Kontrol Pencarian dan Pengurutan</h2>
         <div class="favorites-controls">
           <div class="search-box">
             <i class="fas fa-search"></i>
@@ -106,7 +107,7 @@ export default class FavoritesPage {
           loading="lazy"
         />
         <div class="favorite-content">
-          <h3 class="favorite-title">${story.name}</h3>
+          <h2 class="favorite-title">${story.name}</h2>
           <p class="favorite-description">${story.description}</p>
           <div class="favorite-meta">
             <span class="favorite-date">
