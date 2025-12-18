@@ -1,0 +1,134 @@
+STORY APP - SUBMISSION DICODING
+================================
+ 
+INFORMASI PROJECT
+-----------------
+Aplikasi: Story App - Platform Berbagi Cerita dengan Peta Digital
+Developer: Darma Riduan
+Kelas: Menjadi Front-End Web Developer Expert - Dicoding
+Tanggal: 15 Desember 2025
+ 
+API KEYS & CONFIGURATION
+-------------------------
+API_BASE_URL=https://story-api.dicoding.dev/v1
+MAP_SERVICE=OpenStreetMap (Tidak memerlukan API Key)
+ 
+CATATAN:
+- Peta menggunakan OpenStreetMap, OpenTopoMap, dan Esri Satellite (gratis, tanpa API key)
+- Jika ingin menggunakan service lain seperti Mapbox, dapat menambahkan API key di sini
+ 
+FITUR-FITUR YANG DIIMPLEMENTASIKAN
+-----------------------------------
+ 
+✅ KRITERIA 1: SPA dan Transisi Halaman (4/4 Points - ADVANCE)
+   - ✅ Hash routing tanpa reload halaman
+   - ✅ View Transition API (custom transition dengan fade + slide up)
+   - ✅ Arsitektur MVP (Model-View-Presenter) pada semua halaman
+ 
+✅ KRITERIA 2: Peta Digital (4/4 Points - ADVANCE)
+   - ✅ Menampilkan data dari API (gambar + name + description + createdAt)
+   - ✅ Marker dan popup pada peta
+   - ✅ Fitur interaktif: Highlight marker aktif + Sinkronisasi list dan peta
+   - ✅ Layer control dengan 3 tile layer:
+       * Peta Jalan (OpenStreetMap)
+       * Satelit (Esri World Imagery)
+       * Topografi (OpenTopoMap)
+ 
+✅ KRITERIA 3: Tambah Data Baru (4/4 Points - ADVANCE)
+   - ✅ Form dengan upload file
+   - ✅ Pemilihan lat/lon melalui klik peta
+   - ✅ HTTP Request asynchronous (Fetch API)
+   - ✅ Validasi input real-time
+   - ✅ Pesan error/success yang jelas
+   - ✅ Opsi mengambil foto dari kamera langsung
+   - ✅ Media stream ditutup setelah tidak digunakan
+ 
+✅ KRITERIA 4: Aksesibilitas (4/4 Points - ADVANCE)
+   - ✅ Alt text pada semua gambar
+   - ✅ HTML semantik (header, main, footer, article, section, nav)
+   - ✅ Label pada semua input dengan aria-required
+   - ✅ Responsive design:
+       * Mobile: 375px ✅
+       * Tablet: 768px ✅
+       * Desktop: 1024px ✅
+   - ✅ Skip to content link
+   - ✅ Semua elemen interaktif dapat dioperasikan dengan keyboard
+   - ✅ Focus visible untuk keyboard navigation
+   - ✅ ARIA attributes (role, aria-label, aria-live)
+ 
+TEKNOLOGI YANG DIGUNAKAN
+-------------------------
+- Vite - Build tool modern
+- Vanilla JavaScript (ES6+)
+- Leaflet - Library peta interaktif
+- Story API Dicoding - Backend service
+- View Transition API - Animasi perpindahan halaman
+- Media Stream API - Akses kamera
+- Fetch API - HTTP requests
+- LocalStorage - Token management
+ 
+CARA MENJALANKAN PROJECT
+-------------------------
+1. Install dependencies:
+   npm install
+ 
+2. Jalankan development server:
+   npm run dev
+ 
+3. Build untuk production:
+   npm run build
+ 
+4. Preview production build:
+   npm run preview
+ 
+STRUKTUR PROJECT
+----------------
+src/
+├── index.html                 # Entry point HTML
+├── scripts/
+│   ├── index.js               # Bootstrap aplikasi
+│   ├── config.js              # Konfigurasi API
+│   ├── data/
+│   │   └── api.js             # API calls ke backend
+│   ├── pages/
+│   │   ├── app.js             # Main app dengan routing & auth guard
+│   │   ├── home/              # Home page (MVP pattern)
+│   │   ├── login/             # Login page (MVP pattern)
+│   │   ├── register/          # Register page (MVP pattern)
+│   │   ├── add-story/         # Add story page (MVP pattern)
+│   │   └── about/             # About page
+│   ├── routes/
+│   │   ├── routes.js          # Route definitions
+│   │   └── url-parser.js      # URL parsing utilities
+│   └── utils/
+│       ├── auth-utils.js      # Authentication utilities
+│       ├── validation-utils.js # Form validation
+│       ├── notification-utils.js # Toast notifications
+│       └── index.js           # Utility exports
+└── styles/
+    └── styles.css             # Global styles
+ 
+CATATAN PENTING
+---------------
+1. Aplikasi menggunakan arsitektur MVP (Model-View-Presenter) untuk separation of concerns
+2. View Transition API hanya berfungsi di browser yang mendukung (Chrome 111+, Edge 111+)
+3. Untuk menggunakan fitur kamera, aplikasi harus dijalankan di HTTPS atau localhost
+4. Token disimpan di localStorage dan akan expired sesuai setting backend
+5. Semua form memiliki validasi real-time
+6. Peta menggunakan OpenStreetMap yang gratis dan tidak memerlukan API key
+ 
+FITUR TAMBAHAN
+--------------
+- Toast notification untuk feedback user
+- Loading state pada semua async operations
+- Error handling yang comprehensive
+- Responsive images dengan lazy loading
+- Skeleton loading untuk better UX
+- Auto-logout jika token expired
+- Redirect otomatis untuk protected routes
+ 
+CONTACT
+-------
+Jika ada pertanyaan terkait project ini, silakan hubungi melalui:
+Email: dharmarhiduwhan@gmail.com
+GitHub: https://github.com/darmariduan/starter-project-with-vite
