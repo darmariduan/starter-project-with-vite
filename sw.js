@@ -1,249 +1,158 @@
-/* eslint-disable no-restricted-globals */
 const CACHE_NAME = 'story-app-v1';
-const API_CACHE = 'story-app-api-v1';
-const IMAGE_CACHE = 'story-app-images-v1';
+const BASE_PATH = '/starter-project-with-vite';
 
 const urlsToCache = [
-    '/',
-    '/index.html',
-    '/scripts/index.js',
-    '/styles/styles.css',
+    `${BASE_PATH}/`,
+    `${BASE_PATH}/index.html`,
+    `${BASE_PATH}/manifest.json`,
 ];
 
-// Install event - cache static assets
+// Install
 self.addEventListener('install', (event) => {
-    console.log('Service Worker installing...');
-
+    console.log('[SW] Installing...');
     event.waitUntil(
-        caches.open(CACHE_NAME)
-            .then((cache) => {
-                console.log('Opened cache');
-                return cache.addAll(urlsToCache);
-            })
-            .then(() => self.skipWaiting())
+        caches.open(CACHE_NAME).then((cache) => {
+            console.log('[SW] Caching app shell');
+            return cache.addAll(urlsToCache).catch((error) => {
+                console.error('[SW] Cache addAll error:', error);
+            });
+        })
     );
+    self.skipWaiting();
 });
 
-// Activate event - clean up old caches
+// Activate
 self.addEventListener('activate', (event) => {
-    console.log('Service Worker activating...');
-
+    console.log('[SW] Activating...');
     event.waitUntil(
         caches.keys().then((cacheNames) => {
             return Promise.all(
                 cacheNames.map((cacheName) => {
-                    if (cacheName !== CACHE_NAME &&
-                        cacheName !== API_CACHE &&
-                        cacheName !== IMAGE_CACHE) {
-                        console.log('Deleting old cache:', cacheName);
+                    if (cacheName !== CACHE_NAME) {
+                        console.log('[SW] Deleting old cache:', cacheName);
                         return caches.delete(cacheName);
                     }
                 })
             );
-        }).then(() => self.clients.claim())
+        })
     );
+    self.clients.claim();
 });
 
-// Fetch event - Network First for API, Cache First for images, Stale While Revalidate for static
+// Fetch - Network First for API, Cache First for assets
 self.addEventListener('fetch', (event) => {
     const { request } = event;
     const url = new URL(request.url);
 
-    // API requests - Network First with cache fallback
+    // API requests - Network First
     if (url.origin === 'https://story-api.dicoding.dev') {
         event.respondWith(
             fetch(request)
                 .then((response) => {
-                    // Clone response before caching
-                    const responseToCache = response.clone();
-
-                    caches.open(API_CACHE).then((cache) => {
-                        cache.put(request, responseToCache);
+                    // Clone response untuk cache
+                    const responseClone = response.clone();
+                    caches.open(CACHE_NAME).then((cache) => {
+                        cache.put(request, responseClone);
                     });
-
                     return response;
                 })
                 .catch(() => {
-                    // If network fails, try cache
-                    return caches.match(request)
-                        .then((cachedResponse) => {
-                            if (cachedResponse) {
-                                return cachedResponse;
-                            }
-                            // Return offline page for API requests if no cache
-                            return new Response(
-                                JSON.stringify({ error: true, message: 'Offline - No cached data available' }),
-                                { headers: { 'Content-Type': 'application/json' } }
-                            );
-                        });
+                    // Fallback ke cache jika offline
+                    return caches.match(request).then((cached) => {
+                        return cached || new Response('Offline', { status: 503 });
+                    });
                 })
         );
         return;
     }
 
-    // Image requests - Cache First
-    if (request.destination === 'image') {
-        event.respondWith(
-            caches.open(IMAGE_CACHE).then((cache) => {
-                return cache.match(request).then((cachedResponse) => {
-                    if (cachedResponse) {
-                        return cachedResponse;
-                    }
-
-                    return fetch(request).then((response) => {
-                        cache.put(request, response.clone());
-                        return response;
-                    });
-                });
-            })
-        );
-        return;
-    }
-
-    // Static assets - Stale While Revalidate
+    // Static assets - Cache First
     event.respondWith(
-        caches.match(request).then((cachedResponse) => {
-            const fetchPromise = fetch(request).then((networkResponse) => {
-                caches.open(CACHE_NAME).then((cache) => {
-                    cache.put(request, networkResponse.clone());
-                });
-                return networkResponse;
+        caches.match(request).then((cached) => {
+            if (cached) {
+                return cached;
+            }
+            return fetch(request).then((response) => {
+                // Cache response untuk next time
+                if (response && response.status === 200) {
+                    const responseClone = response.clone();
+                    caches.open(CACHE_NAME).then((cache) => {
+                        cache.put(request, responseClone);
+                    });
+                }
+                return response;
             });
-
-            return cachedResponse || fetchPromise;
         })
     );
 });
 
-// Push event - handle push notifications
+// Push Notification Handler
 self.addEventListener('push', (event) => {
-    console.log('Push notification received', event);
+    console.log('[SW] Push received');
 
-    let notificationData = {
-        title: 'Story App',
-        body: 'You have a new story!',
-        icon: '/icons/icon-192x192.png',
-        badge: '/icons/badge-72x72.png',
-        data: {
-            url: '/',
-        },
-    };
+    let data = { title: 'Story App', body: 'New notification' };
 
     if (event.data) {
         try {
-            const data = event.data.json();
-            notificationData = {
-                title: data.title || 'New Story Added!',
-                body: data.body || data.message || 'Check out the latest story',
-                icon: data.icon || '/icons/icon-192x192.png',
-                badge: '/icons/badge-72x72.png',
-                image: data.image || null,
-                data: {
-                    url: data.url || '/',
-                    storyId: data.storyId || null,
-                },
-                actions: [
-                    {
-                        action: 'view',
-                        title: 'View Story',
-                        icon: '/icons/view-icon.png',
-                    },
-                    {
-                        action: 'close',
-                        title: 'Close',
-                        icon: '/icons/close-icon.png',
-                    },
-                ],
-            };
-        } catch (error) {
-            console.error('Error parsing push data:', error);
+            data = event.data.json();
+        } catch (e) {
+            data.body = event.data.text();
         }
     }
 
+    const options = {
+        body: data.body || 'Ada cerita baru!',
+        icon: `${BASE_PATH}/icons/icon-192x192.png`,
+        badge: `${BASE_PATH}/icons/icon-72x72.png`,
+        vibrate: [200, 100, 200],
+        data: {
+            url: data.url || `${BASE_PATH}/`,
+        },
+        actions: [
+            {
+                action: 'open',
+                title: 'Lihat Cerita',
+            },
+            {
+                action: 'close',
+                title: 'Tutup',
+            },
+        ],
+    };
+
+    event.waitUntil(self.registration.showNotification(data.title || 'Story App', options));
+});
+
+// Notification Click Handler
+self.addEventListener('notificationclick', (event) => {
+    console.log('[SW] Notification clicked');
+    event.notification.close();
+
+    if (event.action === 'close') {
+        return;
+    }
+
+    const urlToOpen = event.notification.data?.url || `${BASE_PATH}/`;
+
     event.waitUntil(
-        self.registration.showNotification(notificationData.title, {
-            body: notificationData.body,
-            icon: notificationData.icon,
-            badge: notificationData.badge,
-            image: notificationData.image,
-            data: notificationData.data,
-            actions: notificationData.actions,
-            vibrate: [200, 100, 200],
-            tag: 'story-notification',
-            requireInteraction: false,
+        clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+            // Cek apakah sudah ada window terbuka
+            for (const client of clientList) {
+                if (client.url === urlToOpen && 'focus' in client) {
+                    return client.focus();
+                }
+            }
+            // Jika belum, buka window baru
+            if (clients.openWindow) {
+                return clients.openWindow(urlToOpen);
+            }
         })
     );
 });
 
-// Notification click event
-self.addEventListener('notificationclick', (event) => {
-    console.log('Notification clicked', event);
-
-    event.notification.close();
-
-    if (event.action === 'view') {
-        const urlToOpen = event.notification.data.url || '/';
-
-        event.waitUntil(
-            clients.matchAll({ type: 'window', includeUncontrolled: true })
-                .then((clientList) => {
-                    // Check if there's already a window open
-                    for (let i = 0; i < clientList.length; i++) {
-                        const client = clientList[i];
-                        if (client.url === urlToOpen && 'focus' in client) {
-                            return client.focus();
-                        }
-                    }
-                    // Open new window if none exists
-                    if (clients.openWindow) {
-                        return clients.openWindow(urlToOpen);
-                    }
-                })
-        );
-    } else if (event.action === 'close') {
-        // Just close the notification
-        return;
-    } else {
-        // Default action - open app
-        event.waitUntil(
-            clients.openWindow(event.notification.data.url || '/')
-        );
-    }
-});
-
-// Background sync event - sync offline data
-self.addEventListener('sync', (event) => {
-    console.log('Background sync triggered', event.tag);
-
-    if (event.tag === 'sync-stories') {
-        event.waitUntil(syncPendingStories());
-    }
-});
-
-async function syncPendingStories() {
-    try {
-        // This will be handled by the app's database helper
-        console.log('Syncing pending stories...');
-
-        // Send message to all clients to trigger sync
-        const clients = await self.clients.matchAll();
-        clients.forEach((client) => {
-            client.postMessage({
-                type: 'SYNC_PENDING_STORIES',
-            });
-        });
-    } catch (error) {
-        console.error('Error syncing pending stories:', error);
-    }
-}
-
-// Message event - communicate with app
+// Skip Waiting Message
 self.addEventListener('message', (event) => {
-    console.log('Service Worker received message:', event.data);
-
     if (event.data && event.data.type === 'SKIP_WAITING') {
         self.skipWaiting();
     }
 });
-
-console.log('Service Worker loaded');
