@@ -3,13 +3,13 @@ import { showFormattedDate } from '../../utils';
 import Swal from 'sweetalert2';
 
 export default class FavoritesPage {
-    constructor() {
-        this.presenter = new FavoritesPresenter(this);
-        this.currentSort = 'newest';
-    }
+  constructor() {
+    this.presenter = new FavoritesPresenter(this);
+    this.currentSort = 'newest';
+  }
 
-    async render() {
-        return `
+  async render() {
+    return `
       <section class="favorites-section container">
         <div class="favorites-header">
           <h1><i class="fas fa-heart"></i> Cerita Favorit Saya</h1>
@@ -49,43 +49,43 @@ export default class FavoritesPage {
         </div>
       </section>
     `;
-    }
+  }
 
-    async afterRender() {
-        await this.presenter.loadFavorites();
-        this.setupEventListeners();
-    }
+  async afterRender() {
+    await this.presenter.loadFavorites();
+    this.setupEventListeners();
+  }
 
-    setupEventListeners() {
-        const searchInput = document.getElementById('search-favorites');
-        const sortSelect = document.getElementById('sort-favorites');
+  setupEventListeners() {
+    const searchInput = document.getElementById('search-favorites');
+    const sortSelect = document.getElementById('sort-favorites');
 
-        // Search with debounce
-        let searchTimeout;
-        searchInput.addEventListener('input', (e) => {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => {
-                const query = e.target.value.trim();
-                if (query) {
-                    this.presenter.searchFavorites(query);
-                } else {
-                    this.presenter.loadFavorites();
-                }
-            }, 300);
-        });
+    // Search with debounce
+    let searchTimeout;
+    searchInput.addEventListener('input', (e) => {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(() => {
+        const query = e.target.value.trim();
+        if (query) {
+          this.presenter.searchFavorites(query);
+        } else {
+          this.presenter.loadFavorites();
+        }
+      }, 300);
+    });
 
-        // Sort
-        sortSelect.addEventListener('change', (e) => {
-            this.currentSort = e.target.value;
-            this.presenter.sortFavorites(this.currentSort);
-        });
-    }
+    // Sort
+    sortSelect.addEventListener('change', (e) => {
+      this.currentSort = e.target.value;
+      this.presenter.sortFavorites(this.currentSort);
+    });
+  }
 
-    displayFavorites(favorites) {
-        const favoritesList = document.getElementById('favorites-list');
+  displayFavorites(favorites) {
+    const favoritesList = document.getElementById('favorites-list');
 
-        if (!favorites || favorites.length === 0) {
-            favoritesList.innerHTML = `
+    if (!favorites || favorites.length === 0) {
+      favoritesList.innerHTML = `
         <div class="empty-state">
           <i class="fas fa-heart-broken" style="font-size: 4rem; color: var(--text-secondary); margin-bottom: 1rem;"></i>
           <p>Belum ada cerita favorit.</p>
@@ -95,10 +95,10 @@ export default class FavoritesPage {
           </a>
         </div>
       `;
-            return;
-        }
+      return;
+    }
 
-        favoritesList.innerHTML = favorites.map((story) => `
+    favoritesList.innerHTML = favorites.map((story) => `
       <article class="favorite-card" data-story-id="${story.id}">
         <img 
           src="${story.photoUrl}" 
@@ -130,40 +130,40 @@ export default class FavoritesPage {
       </article>
     `).join('');
 
-        // Add event listeners for remove buttons
-        document.querySelectorAll('.btn-remove-favorite').forEach(btn => {
-            btn.addEventListener('click', async (e) => {
-                const storyId = e.currentTarget.dataset.storyId;
+    // Add event listeners for remove buttons
+    document.querySelectorAll('.btn-remove-favorite').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        const storyId = e.currentTarget.dataset.storyId;
 
-                const result = await Swal.fire({
-                    title: 'Hapus dari Favorit?',
-                    text: 'Cerita ini akan dihapus dari daftar favorit Anda',
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#ef4444',
-                    cancelButtonColor: '#64748b',
-                    confirmButtonText: 'Ya, Hapus!',
-                    cancelButtonText: 'Batal',
-                });
-
-                if (result.isConfirmed) {
-                    await this.presenter.removeFavorite(storyId);
-                }
-            });
+        const result = await Swal.fire({
+          title: 'Hapus dari Favorit?',
+          text: 'Cerita ini akan dihapus dari daftar favorit Anda',
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: '#ef4444',
+          cancelButtonColor: '#64748b',
+          confirmButtonText: 'Ya, Hapus!',
+          cancelButtonText: 'Batal',
         });
-    }
 
-    showLoading() {
-        // Loading skeleton already shown
-    }
+        if (result.isConfirmed) {
+          await this.presenter.removeFavorite(storyId);
+        }
+      });
+    });
+  }
 
-    hideLoading() {
-        // Will be replaced by actual content
-    }
+  showLoading() {
+    // Loading skeleton already shown
+  }
 
-    showError(message) {
-        const favoritesList = document.getElementById('favorites-list');
-        favoritesList.innerHTML = `
+  hideLoading() {
+    // Will be replaced by actual content
+  }
+
+  showError(message) {
+    const favoritesList = document.getElementById('favorites-list');
+    favoritesList.innerHTML = `
       <div class="error-state">
         <i class="fas fa-exclamation-triangle" style="font-size: 4rem; color: var(--error-color); margin-bottom: 1rem;"></i>
         <p>❌ ${message}</p>
@@ -172,24 +172,24 @@ export default class FavoritesPage {
         </button>
       </div>
     `;
-    }
+  }
 
-    onRemoveSuccess() {
-        Swal.fire({
-            icon: 'success',
-            title: 'Berhasil!',
-            text: 'Cerita telah dihapus dari favorit',
-            timer: 2000,
-            showConfirmButton: false,
-        });
-    }
+  onRemoveSuccess() {
+    Swal.fire({
+      icon: 'success',
+      title: 'Berhasil!',
+      text: 'Cerita telah dihapus dari favorit',
+      timer: 2000,
+      showConfirmButton: false,
+    });
+  }
 
-    onRemoveError(message) {
-        Swal.fire({
-            icon: 'error',
-            title: 'Gagal!',
-            text: message || 'Gagal menghapus dari favorit',
-            confirmButtonColor: '#2563eb',
-        });
-    }
+  onRemoveError(message) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Gagal!',
+      text: message || 'Gagal menghapus dari favorit',
+      confirmButtonColor: '#2563eb',
+    });
+  }
 }

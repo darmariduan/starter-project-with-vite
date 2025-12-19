@@ -19,26 +19,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Register Service Worker
   if ('serviceWorker' in navigator) {
     try {
-      // Support untuk GitHub Pages dengan base path
       const swPath = import.meta.env.BASE_URL + 'sw.js';
-      const swScope = import.meta.env.BASE_URL;
-
       const registration = await navigator.serviceWorker.register(swPath, {
-        scope: swScope,
+        scope: import.meta.env.BASE_URL,
       });
-      console.log('Service Worker registered successfully:', registration);
-
-      // Handle updates
-      registration.addEventListener('updatefound', () => {
-        const newWorker = registration.installing;
-        newWorker.addEventListener('statechange', () => {
-          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-            console.log('New service worker available');
-          }
-        });
-      });
+      console.log('✅ Service Worker registered:', registration.scope);
     } catch (error) {
-      console.error('Service Worker registration failed:', error);
+      console.error('❌ Service Worker registration failed:', error);
     }
   }
 
