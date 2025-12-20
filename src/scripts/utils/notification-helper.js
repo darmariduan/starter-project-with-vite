@@ -31,6 +31,52 @@ class NotificationHelper {
         }
     }
 
+    /**
+     * Subscribe push notification ke API Dicoding
+     * @param {PushSubscription} subscription - Push subscription object
+     * @returns {Promise<boolean>} Success status
+     */
+    static async subscribeToAPI(subscription) {
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                console.warn('No token found, cannot subscribe to API');
+                return false;
+            }
+
+            const subscriptionJSON = subscription.toJSON();
+
+            const response = await fetch('https://story-api.dicoding.dev/v1/notifications/subscribe', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                    endpoint: subscriptionJSON.endpoint,
+                    keys: {
+                        p256dh: subscriptionJSON.keys.p256dh,
+                        auth: subscriptionJSON.keys.auth,
+                    },
+                }),
+            });
+
+            const result = await response.json();
+
+            if (result.error === false) {
+                console.log('✅ Successfully subscribed to push API:', result.message);
+                this.saveSubscriptionState(true);
+                return true;
+            } else {
+                console.error('❌ Failed to subscribe to push API:', result.message);
+                return false;
+            }
+        } catch (error) {
+            console.error('❌ Error subscribing to push API:', error);
+            return false;
+        }
+    }
+
     static async unsubscribeFromPush(registration) {
         try {
             const subscription = await registration.pushManager.getSubscription();

@@ -1,5 +1,6 @@
 import StoryAPI from '../../data/api';
 import DatabaseHelper from '../../utils/database-helper';
+import NotificationHelper from '../../utils/notification-helper';
 
 class AddStoryPresenter {
     constructor(view) {
@@ -22,6 +23,9 @@ class AddStoryPresenter {
 
             if (response.error === false) {
                 this.view.onAddSuccess();
+
+                // Trigger push notification setelah berhasil menambahkan story
+                await this.sendNotificationAfterAddStory();
             } else {
                 this.view.onAddError(response.message);
             }
@@ -35,6 +39,49 @@ class AddStoryPresenter {
             }
         } finally {
             this.view.hideLoading();
+        }
+    }
+
+    async sendNotificationAfterAddStory() {
+        try {
+            // Cek apakah service worker sudah registered
+            if (!('serviceWorker' in navigator)) {
+                console.log('Service Worker not supported');
+                return;
+            }
+
+            const registration = await navigator.serviceWorker.ready;
+
+            // Cek permission notifikasi
+            if (Notification.permission !== 'granted') {
+                console.log('Notification permission not granted');
+                return;
+            }
+
+            // Cek apakah sudah subscribe
+            const subscription = await registration.pushManager.getSubscription();
+
+            if (!subscription) {
+                console.log('No push subscription found');
+                return;
+            }
+
+            // Kirim notifikasi lokal sebagai feedback
+            registration.showNotification('Story Berhasil Ditambahkan! 🎉', {
+                body: 'Cerita Anda telah berhasil dibagikan. Terima kasih!',
+                icon: `${import.meta.env.BASE_URL}icons/icon-192x192.png`,
+                badge: `${import.meta.env.BASE_URL}icons/icon-72x72.png`,
+                vibrate: [200, 100, 200],
+                tag: 'story-added',
+                requireInteraction: false,
+                data: {
+                    url: `${import.meta.env.BASE_URL}#/`,
+                },
+            });
+
+            console.log('✅ Notification sent after adding story');
+        } catch (error) {
+            console.error('❌ Error sending notification:', error);
         }
     }
 
